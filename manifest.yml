@@ -1,21 +1,13 @@
 version: '4.0'
 description: Test manifest
-repository: https://github.com/
 
 typegen:
-  metadata:
-    source: wss://kusama-rpc.polkadot.io/
-  events:
-    - balances.Transfer
-  calls:
-    - timestamp.set
   outDir: src/types
+  events:
 
 mappings:
   mappingsModule: lib/mappings
   eventHandlers:
-    - event: balances.Transfer
-      handler: balancesTransfer
   extrinsicHandlers:
   preBlockHooks:
   postBlockHooks:
