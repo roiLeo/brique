@@ -1,1 +1,75 @@
+enum BaseType {
+    svg
+}
+
+enum BasePartType {
+    fixed
+    slot
+}
+
+type BasePart @entity {
+    id: ID!
+    type: BasePartType!
+    equippable: [String!]!
+    src: String!
+    z: Int!
+    base: Base!
+}
+
+
+type BaseTheme {
+    name: String!
+    theme: String!
+    
+}
+
+type Base @entity {
+    id: ID!
+    symbol: String!
+    issuer: String!
+    parts: [BasePart!] @derivedFrom(field: "base")
+    themes: [BaseTheme]
+}
+
+type Collection @entity {
+    id: ID!
+    max: BigInt!
+    issuer: String!
+    symbol: String!
+    metadata: String!
+    properties: String!
+    nfts: [NFT] @derivedFrom(field: "collection")
+}
+
+type NFT @entity {
+    id: ID!
+    collection: Collection!
+    symbol: String!
+    transferable: BigInt!
+    sn: String!
+    metadata: String!
+    properties: String!
+    owner: String!
+    rootowner: String!
+    parent: NFT
+    children: [NFT!] @derivedFrom(field: "parent")
+    equipped: String!
+    pending: Boolean!
+    priority: [String]
+}
+
+type Resource @entity {
+    id: ID!
+    src: String
+    metadata: String
+    license: String
+    thumb: String
+    base: Base
+    parts: [String]
+    theme: String
+    slot: String!
+
+}
+
+
 
