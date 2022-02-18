@@ -1,7 +1,7 @@
-import { Attribute, CollectionEvent, Interaction as RmrkEvent } from '../../generated/model'
-import { StoreContext, ExtrinsicContext } from '@subsquid/hydra-common'
+import { Attribute, CollectionEvent, Interaction as RmrkEvent } from '../../model/generated'
+import {ExtrinsicHandlerContext } from '@subsquid/substrate-processor'
 import { RemarkResult } from './extract'
-import { string } from '../../generated/marshal'
+
 
 export { RmrkEvent }
 
@@ -38,7 +38,7 @@ export function attributeFrom(attribute: MetadataAttribute): Attribute {
   })
 }
 
-export type Context = ExtrinsicContext & StoreContext
+export type Context = ExtrinsicHandlerContext 
 
 export type Optional<T> = T | null
 
@@ -53,33 +53,6 @@ export interface IEvent {
 export interface RmrkInteraction {
   id: string;
   metadata?: string;
-}
-
-export interface Collection {
-  version: string;
-  name: string;
-  max: number;
-  issuer: string;
-  symbol: string;
-  id: string;
-  _id: string;
-  metadata: string;
-  blockNumber?: number;
-}
-
-export interface NFT {
-  name: string;
-  instance: string;
-  transferable: number;
-  collection: string;
-  sn: string;
-  _id: string;
-  id: string;
-  metadata: string;
-  currentOwner: string;
-  price?: string;
-  disabled?: boolean;
-  blockNumber?: number;
 }
 
 
@@ -106,24 +79,3 @@ export type SomethingWithMeta = {
 
 export type SanitizerFunc = (url: string) => string
 
-export type TokenMetadata = {
-  name?: string
-  description: string
-  external_url?: string
-  image: string
-  animation_url?: string
-  attributes?: MetadataAttribute[]
-}
-
-export type MetadataAttribute = {
-  display_type?: DisplayType
-  trait_type?: string
-  value: number | string
-}
-
-export enum DisplayType {
-  null,
-  'boost_number',
-  'number',
-  'boost_percentage',
-}
