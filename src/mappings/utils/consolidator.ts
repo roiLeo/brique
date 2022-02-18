@@ -1,5 +1,5 @@
 import { BatchArg, RmrkInteraction } from './types'
-import { CollectionEntity, NFTEntity } from '../../generated/model'
+import { CollectionEntity, NFTEntity } from '../../model/generated'
 // import { decodeAddress } from '@polkadot/util-crypto'
 type Entity = CollectionEntity | NFTEntity
 
@@ -67,11 +67,3 @@ export function isBuyLegalOrElseError(entity: NFTEntity, extraCalls: BatchArg[])
   }
 }
 
-// TODO: Does not work :)
-// export function isAccountValidOrElseError(caller: string) {
-//   try {
-//     decodeAddress(caller)
-//   } catch (e) {
-//     throw new ReferenceError(`[CONSOLIDATE Invalid account] ${caller}`)
-//   }
-// }

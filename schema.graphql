@@ -1,5 +1,26 @@
+type Call @entity {
+  id: ID! #id is a required field
+  interaction: Interaction
+  value: String! # call text
+  caller: String!
+  base: Base
+  nft: NFT
+  collection: Collection
+  success: Boolean! # if manage to process
+  error: String # if failed
+  extrinsicId: String!
+  blockNumber: String!
+  blockHash: String!
+  createdAt: DateTime!
+}
+
+
 enum BaseType {
     svg
+    audio
+    mixed
+    video
+    png
 }
 
 enum BasePartType {
@@ -7,38 +28,69 @@ enum BasePartType {
     slot
 }
 
-type BasePart @entity {
+type Account @entity {
     id: ID!
+    bases: [Base!] @derivedFrom(field: "issuer")
+    collections: [Collection!] @derivedFrom(field: "issuer")
+    nfts: [NFT!] @derivedFrom(field: "rootowner")
+}
+
+
+
+type BasePart @entity {
+    fullID: ID!
+    innerID: String!
     type: BasePartType!
     equippable: [String!]!
-    src: String!
+    src: String
+    thumb: String
     z: Int!
+    base: Base!
+    metadata: String
+}
+
+type BaseTheme @entity {
+    name: String!
+    theme: String!
     base: Base!
 }
 
 
-type BaseTheme {
-    name: String!
-    theme: String!
-    
-}
-
 type Base @entity {
     id: ID!
+    type: BaseType!
     symbol: String!
-    issuer: String!
+    issuer: Account!
     parts: [BasePart!] @derivedFrom(field: "base")
-    themes: [BaseTheme]
+    themes: [BaseTheme!] @derivedFrom(field: "base")
+    attachedToResources: [Resource!] @derivedFrom (field: "base")
+    logs: [Call!] @derivedFrom (field: "base")
+}
+
+enum CollectionStatus {
+    FIXED
+    DESTROYED
+    ACTIVE
 }
 
 type Collection @entity {
     id: ID!
     max: BigInt!
-    issuer: String!
+    issuer: Account!
     symbol: String!
-    metadata: String!
+    metadata: String
     properties: String!
     nfts: [NFT] @derivedFrom(field: "collection")
+    nftAmount: BigInt!
+    status: CollectionStatus!
+    logs: [Call!] @derivedFrom (field: "collection")
+}
+
+
+enum NFTStatus {
+    LISTED
+    FIXED
+    BURNED
 }
 
 type NFT @entity {
@@ -47,16 +99,19 @@ type NFT @entity {
     symbol: String!
     transferable: BigInt!
     sn: String!
-    metadata: String!
+    metadata: String
     properties: String!
-    owner: String!
-    rootowner: String!
+    owner: String! # = parent.id or rootowner
     parent: NFT
+    rootowner: Account!
     children: [NFT!] @derivedFrom(field: "parent")
     equipped: String!
     pending: Boolean!
     priority: [String]
+    status: NFTStatus!
+    logs: [Call!] @derivedFrom (field: "nft")
 }
+
 
 type Resource @entity {
     id: ID!
@@ -65,11 +120,35 @@ type Resource @entity {
     license: String
     thumb: String
     base: Base
-    parts: [String]
-    theme: String
+    parts: [ResourcePart!] @derivedFrom (field: "resource")
+    theme: BaseTheme
     slot: String!
+}
 
+type ResourcePart @entity {
+    resource: Resource!
+    part: BasePart!
 }
 
 
+enum Interaction {
+  ACCEPT
+  BASE
+  BURN
+  CREATE
+  DESTROY
+  MINT
+  LIST
+  BUY
+  SEND
+  CHANGEISSUER
+  EMOTE
+  SETPRIORITY
+  SETPROPERTY
+  THEMEADD
+  RESADD
+  EQUIP
+  EQUIPPABLE
+  LOCK
+}
 

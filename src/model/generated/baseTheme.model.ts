@@ -1,22 +1,22 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
-import {NFTEntity} from "./nFTEntity.model"
+import {Base} from "./base.model"
 
 @Entity_()
-export class Emote {
-  constructor(props?: Partial<Emote>) {
+export class BaseTheme {
+  constructor(props?: Partial<BaseTheme>) {
     Object.assign(this, props)
   }
 
   @PrimaryColumn_()
   id!: string
 
+  @Column_("text", {nullable: false})
+  name!: string
+
+  @Column_("text", {nullable: false})
+  theme!: string
+
   @Index_()
-  @ManyToOne_(() => NFTEntity, {nullable: false})
-  nft!: NFTEntity
-
-  @Column_("text", {nullable: false})
-  caller!: string
-
-  @Column_("text", {nullable: false})
-  value!: string
+  @ManyToOne_(() => Base, {nullable: false})
+  base!: Base
 }

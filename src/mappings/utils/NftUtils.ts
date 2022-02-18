@@ -6,7 +6,7 @@ export function isHex(text: string) {
 }
 
 export function hexToString(text: string) {
-  return Buffer.from(text.replace(/^0x/, ''), 'hex').toString()
+  return isHex(text) ? Buffer.from(text.replace(/^0x/, ''), 'hex').toString() : text 
 }
 
 class NFTUtils {
@@ -20,25 +20,7 @@ class NFTUtils {
     );
   }
 
-  public static convert(rmrkString: string): RMRK {
-    try {
-      return {
-        event: NFTUtils.getAction(rmrkString),
-        view: NFTUtils.unwrap(rmrkString)
-      }
-    } catch(e) {
-      throw e
-    }
-  }
-
-  public static nftSerialNumber(index: number, offset: number = 0, plusOne: boolean = true) {
-    return String(index + offset + Number(plusOne)).padStart(16, '0');
-  }
-
-  public static decodeAndConvert(rmrkString: string) {
-    return NFTUtils.convert(NFTUtils.decodeRmrk(rmrkString))
-  }
-
+ 
   public static getAction = (rmrkString: string): RmrkEvent  => {
     if (RmrkActionRegex.MINT.test(rmrkString)) {
       return RmrkEvent.MINT
