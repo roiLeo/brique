@@ -1,17 +1,17 @@
 import { BatchArg, RmrkInteraction } from './types'
-import { CollectionEntity, NFTEntity } from '../../model/generated'
+import { Collection, NFT, Base, NFTStatus, Account } from '../../model/generated'
 // import { decodeAddress } from '@polkadot/util-crypto'
-type Entity = CollectionEntity | NFTEntity
+type Entity = Collection | Base
 
 export function exists<T>(entity: T | undefined): boolean {
   return !!entity
 }
 
-export function isBurned(nft: NFTEntity) {
-  return nft.burned ?? false
+export function isBurned(nft: NFT) {
+  return nft.status === NFTStatus.BURNED
 }
 
-export function isTransferable(nft: NFTEntity) {
+export function isTransferable(nft: NFT) {
   return !!nft.transferable
 }
 
@@ -19,18 +19,24 @@ export function hasMeta(nft: RmrkInteraction): nft is RmrkInteraction  {
   return !!nft.metadata
 }
 
-export function isOwner(entity: Entity, caller: string) {
-  return entity.currentOwner === caller
+export function isOwner(entity: NFT, caller: string) {
+  return entity.rootowner.id === caller
 }
 
 export function isIssuer(entity: Entity, caller: string) {
-  return entity.issuer === caller
+  return entity.issuer.id === caller
 }
 
 
-export function isOwnerOrElseError(entity: Entity, caller: string) {
-  if (!isOwner(entity, caller)) {
-    throw new ReferenceError(`[CONSOLIDATE Bad Owner] Entity: ${entity.issuer} Caller: ${caller}`)
+export function isIssuerOrElseError(entity: Entity, caller: string) {
+  if (!isIssuer(entity, caller)) {
+    throw new ReferenceError(`[CONSOLIDATE Bad Issuer] Entity: ${entity.issuer} Caller: ${caller}`)
+  }
+}
+
+export function isOwnerOrElseError(nft: NFT, caller: string) {
+  if (!isOwner(nft, caller)) {
+    throw new ReferenceError(`[CONSOLIDATE Bad Owner] NFT: ${nft.rootowner} Caller: ${caller}`)
   }
 }
 
@@ -40,12 +46,11 @@ export function canOrElseError<T>(callback: (arg: T) => boolean, entity: T, nega
   }
 }
 
-export function validateInteraction(nft: NFTEntity, interaction: RmrkInteraction) {
+export function validateNFT(nft: NFT) {
   try {
-    canOrElseError<RmrkInteraction>(hasMeta, interaction, true)
-    canOrElseError<NFTEntity>(exists, nft, true)
-    canOrElseError<NFTEntity>(isBurned, nft)
-    canOrElseError<NFTEntity>(isTransferable, nft, true)
+    canOrElseError<NFT>(exists, nft, true)
+    canOrElseError<NFT>(isBurned, nft)
+    canOrElseError<NFT>(isTransferable, nft, true)
   } catch (e) {
     throw e
   }
@@ -56,14 +61,3 @@ export function isPositiveOrElseError(entity: bigint | number, excludeZero?: boo
     throw new ReferenceError(`[CONSOLIDATE isPositiveOrElseError] Entity: ${entity}`)
   }
 }
-
-export const isBalanceTransfer = ({ callIndex }: BatchArg): boolean => callIndex === '0x0400'
-const canBuy = (nft: NFTEntity) => (call: BatchArg) => isBalanceTransfer(call) && isOwner(nft, call.args.dest.id) && BigInt(call.args.value) >= BigInt(nft.price ?? 0)
-
-export function isBuyLegalOrElseError(entity: NFTEntity, extraCalls: BatchArg[]) {
-  const result = extraCalls.some(canBuy(entity))
-  if (!result) {
-    throw new ReferenceError(`[CONSOLIDATE ILLEGAL BUY] Entity: ${entity.id} CALLS: ${JSON.stringify(extraCalls)}`)
-  }
-}
-

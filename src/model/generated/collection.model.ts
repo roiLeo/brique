@@ -24,11 +24,11 @@ export class Collection {
   @Column_("text", {nullable: false})
   symbol!: string
 
-  @Column_("text", {nullable: false})
-  metadata!: string
+  @Column_("text", {nullable: true})
+  metadata!: string | undefined | null
 
-  @Column_("text", {nullable: false})
-  properties!: string
+  @Column_("text", {nullable: true})
+  properties!: string | undefined | null
 
   @OneToMany_(() => NFT, e => e.collection)
   nfts!: NFT[]

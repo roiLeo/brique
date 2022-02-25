@@ -8,6 +8,7 @@ serve:
 reset:
 	@npx sqd db drop
 	@npx sqd db create
+	@npx sqd db:create-migration Data
 	@npx sqd db:migrate
 
 migrate:

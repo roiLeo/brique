@@ -1,72 +1,47 @@
-import { Attribute, CollectionEvent, Interaction as RmrkEvent } from '../../model/generated'
-import {ExtrinsicHandlerContext } from '@subsquid/substrate-processor'
-import { RemarkResult } from './extract'
+import { Call, Interaction} from '../../model/generated'
+import { ExtrinsicHandlerContext } from '@subsquid/substrate-processor'
 
 
-export { RmrkEvent }
-
-export const getNftId = (nft: any, blocknumber?: string | number): string => {
-  return `${blocknumber ? blocknumber + '-' : '' }${nft.collection}-${nft.instance || nft.name}-${nft.sn}`
+export const getNftId = (nft: any, blocknumber: string | number): string => {
+  return `${blocknumber}-${nft.collection}-${nft.symbol}-${nft.sn}`
 }
 
 
-export function collectionEventFrom(interaction: RmrkEvent.MINT | RmrkEvent.CHANGEISSUER,  { blockNumber, caller, timestamp }: RemarkResult, meta: string): CollectionEvent {
-  return new CollectionEvent({
+
+export const isNFTID = (reciepent: string):boolean => {
+  const re = /^\d+-\S+-\S+-\S+-\d+$/gm
+  return re.test(reciepent)
+}
+
+export function CallFrom(interaction: Interaction, value: string, ctx: ExtrinsicHandlerContext): Call {
+  const blockHash = ctx.block.hash
+  const timestamp = new Date(ctx.block.timestamp)
+  const caller = ctx.extrinsic.signer
+  const blockNumber = String(ctx.block.height)
+  const extrinsicId = ctx.extrinsic.id
+  
+  return new Call({
     interaction,
+    value,
+    caller,
     blockNumber,
-    caller,
+    blockHash,
+    extrinsicId,
     timestamp,
-    meta
   })
 }
-
-export function eventFrom(interaction: RmrkEvent,  { blockNumber, caller, timestamp }: RemarkResult, meta: string): IEvent {
-  return {
-    interaction,
-    blockNumber: BigInt(blockNumber),
-    caller,
-    timestamp,
-    meta
-  }
-}
-
-export function attributeFrom(attribute: MetadataAttribute): Attribute {
-  return new Attribute({}, {
-    display: String(attribute.display_type),
-    trait: String(attribute.trait_type),
-    value: String(attribute.value)
-  })
-}
-
-export type Context = ExtrinsicHandlerContext 
 
 export type Optional<T> = T | null
 
-export interface IEvent {
-  interaction: RmrkEvent;
-  blockNumber: bigint,
-  caller: string,
-  timestamp: Date,
-  meta: string;
-}
 
 export interface RmrkInteraction {
   id: string;
   metadata?: string;
 }
 
-
-export interface RMRK {
-  event: RmrkEvent;
-  view: RmrkType;
-}
-
 export type EntityConstructor<T> = {
   new (...args: any[]): T;
 };
-
-
-export type RmrkType = Collection | NFT | RmrkInteraction
 
 export type BatchArg = {
   args: Record<string, any>,

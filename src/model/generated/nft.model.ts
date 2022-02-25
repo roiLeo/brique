@@ -1,10 +1,11 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_, OneToMany as OneToMany_} from "typeorm"
 import * as marshal from "./marshal"
 import {Collection} from "./collection.model"
-import {NFT} from "./nft.model"
 import {Account} from "./account.model"
 import {NFTStatus} from "./_nftStatus"
 import {Call} from "./call.model"
+import {Emotion} from "./emotion.model"
+import {Resource} from "./resource.model"
 
 @Entity_()
 export class NFT {
@@ -28,11 +29,11 @@ export class NFT {
   @Column_("text", {nullable: false})
   sn!: string
 
-  @Column_("text", {nullable: false})
-  metadata!: string
+  @Column_("text", {nullable: true})
+  metadata!: string | undefined | null
 
-  @Column_("text", {nullable: false})
-  properties!: string
+  @Column_("text", {nullable: true})
+  properties!: string | undefined | null
 
   @Column_("text", {nullable: false})
   owner!: string
@@ -62,4 +63,10 @@ export class NFT {
 
   @OneToMany_(() => Call, e => e.nft)
   logs!: Call[]
+
+  @OneToMany_(() => Emotion, e => e.nft)
+  emotions!: Emotion[]
+
+  @OneToMany_(() => Resource, e => e.nft)
+  resources!: Resource[]
 }

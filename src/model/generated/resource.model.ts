@@ -2,6 +2,7 @@ import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, M
 import {Base} from "./base.model"
 import {ResourcePart} from "./resourcePart.model"
 import {BaseTheme} from "./baseTheme.model"
+import {NFT} from "./nft.model"
 
 @Entity_()
 export class Resource {
@@ -37,4 +38,8 @@ export class Resource {
 
   @Column_("text", {nullable: false})
   slot!: string
+
+  @Index_()
+  @ManyToOne_(() => NFT, {nullable: false})
+  nft!: NFT
 }

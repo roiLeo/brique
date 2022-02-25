@@ -1,60 +1,64 @@
 
 import { extractRemark, Records } from './utils'
-import { RmrkEvent } from './utils/types'
+import { Call, Interaction } from '../model'
 import NFTUtils, { hexToString } from './utils/NftUtils'
 import { SystemRemarkCall } from '../types/calls'
-import { Context } from './utils/types'
+import { ExtrinsicHandlerContext } from '@subsquid/substrate-processor'
 import logger from './utils/logger'
 import * as InteractionMaps from "./interactions"
 
 
-export async function handleRemark(context: Context): Promise<void> {
+const RMRK_VERSION = "2.0.0"
+
+export async function handleRemark(context: ExtrinsicHandlerContext): Promise<void> {
   const remark = new SystemRemarkCall(context).asV1020.remark
   const records = extractRemark(remark.toString(), context)
   await mainFrame(records, context)
 }
 
-export async function handleBatch(context: Context): Promise<void> {
+export async function handleBatch(context: ExtrinsicHandlerContext): Promise<void> {
   const records = extractRemark(context.extrinsic, context)
   await mainFrame(records, context)
 }
 
-export async function handleBatchAll(context: Context): Promise<void> {
+export async function handleBatchAll(context: ExtrinsicHandlerContext): Promise<void> {
   const records = extractRemark(context.extrinsic, context)
   await mainFrame(records, context)
 }
 
-async function mainFrame(records: Records, context: Context): Promise<void> {
+async function mainFrame(records: Records, context: ExtrinsicHandlerContext): Promise<void> {
   for (const remark of records) {
     try {
       const decoded = hexToString(remark.value)
-      const event: RmrkEvent = NFTUtils.getAction(decoded)
+      const params = NFTUtils.unwrap(decoded)
+      const specVersion = params[2]
+      if (specVersion != RMRK_VERSION) throw new Error(`Wrong RMRK version ${specVersion}`);
+      const event: Interaction = NFTUtils.getAction(params[1])
       logger.pending(`[${remark.blockNumber}] Event ${event} `)
-
       switch (event) {
-        case RmrkEvent.CREATE:
-          await InteractionMaps.mint(remark, context)
+        case Interaction.CREATE:
+          await InteractionMaps.createCollection(params, context, decoded)
           break
-        case RmrkEvent.MINT:
-          await InteractionMaps.mintNFT(remark, context)
+        case Interaction.MINT:
+          await InteractionMaps.mintNFT(params, context, decoded)
           break
-        case RmrkEvent.SEND:
-          await InteractionMaps.send(remark, context)
+        case Interaction.SEND:
+          await InteractionMaps.send(params, context)
           break
-        case RmrkEvent.BUY:
-          await InteractionMaps.buy(remark, context)
+        case Interaction.BUY:
+          await InteractionMaps.buy(params, context)
           break
-        case RmrkEvent.BURN:
-          await InteractionMaps.consume(remark, context)
+        case Interaction.BURN:
+          await InteractionMaps.consume(params, context)
           break
-        case RmrkEvent.LIST:
-          await InteractionMaps.list(remark, context)
+        case Interaction.LIST:
+          await InteractionMaps.list(params, context)
           break
-        case RmrkEvent.CHANGEISSUER:
-          await InteractionMaps.changeIssuer(remark, context)
+        case Interaction.CHANGEISSUER:
+          await InteractionMaps.changeIssuer(params, context)
           break
-        case RmrkEvent.EMOTE:
-          await InteractionMaps.emote(remark, context)
+        case Interaction.EMOTE:
+          await InteractionMaps.emote(params, context)
           break
         default:
           logger.error(

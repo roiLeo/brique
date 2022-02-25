@@ -50,5 +50,5 @@ export class Call {
   blockHash!: string
 
   @Column_("timestamp with time zone", {nullable: false})
-  createdAt!: Date
+  timestamp!: Date
 }

@@ -11,7 +11,7 @@ type Call @entity {
   extrinsicId: String!
   blockNumber: String!
   blockHash: String!
-  createdAt: DateTime!
+  timestamp: DateTime!
 }
 
 
@@ -33,6 +33,7 @@ type Account @entity {
     bases: [Base!] @derivedFrom(field: "issuer")
     collections: [Collection!] @derivedFrom(field: "issuer")
     nfts: [NFT!] @derivedFrom(field: "rootowner")
+    emoted: [Emotion!] @derivedFrom(field: "sender")
 }
 
 
@@ -79,7 +80,7 @@ type Collection @entity {
     issuer: Account!
     symbol: String!
     metadata: String
-    properties: String!
+    properties: String
     nfts: [NFT] @derivedFrom(field: "collection")
     nftAmount: BigInt!
     status: CollectionStatus!
@@ -100,7 +101,7 @@ type NFT @entity {
     transferable: BigInt!
     sn: String!
     metadata: String
-    properties: String!
+    properties: String
     owner: String! # = parent.id or rootowner
     parent: NFT
     rootowner: Account!
@@ -110,6 +111,8 @@ type NFT @entity {
     priority: [String]
     status: NFTStatus!
     logs: [Call!] @derivedFrom (field: "nft")
+    emotions: [Emotion!] @derivedFrom (field: "nft")
+    resources: [Resource!] @derivedFrom (field: "nft")
 }
 
 
@@ -123,6 +126,7 @@ type Resource @entity {
     parts: [ResourcePart!] @derivedFrom (field: "resource")
     theme: BaseTheme
     slot: String!
+    nft: NFT!
 }
 
 type ResourcePart @entity {
@@ -130,6 +134,13 @@ type ResourcePart @entity {
     part: BasePart!
 }
 
+type Emotion @entity {
+    id: ID!
+    sender: Account!
+    emoji: String!
+    nft: NFT!
+    count: Int!
+}
 
 enum Interaction {
   ACCEPT

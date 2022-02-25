@@ -1,4 +1,4 @@
-import { RmrkEvent, RMRK, RmrkInteraction } from './types';
+import { Interaction } from '../../model';
 const SQUARE = '::'
 
 export function isHex(text: string) {
@@ -21,80 +21,38 @@ class NFTUtils {
   }
 
  
-  public static getAction = (rmrkString: string): RmrkEvent  => {
-    if (RmrkActionRegex.MINT.test(rmrkString)) {
-      return RmrkEvent.MINT
+  public static getAction = (rawAction: string): Interaction  => {
+    if ((<any>Object).values(Interaction).includes(rawAction)) {
+      return Interaction[rawAction as Interaction]
     }
-
-    if (RmrkActionRegex.MINTNFT.test(rmrkString)) {
-      return RmrkEvent.MINTNFT
-    }
-
-    if (RmrkActionRegex.SEND.test(rmrkString)) {
-      return RmrkEvent.SEND
-    }
-
-    if (RmrkActionRegex.BUY.test(rmrkString)) {
-      return RmrkEvent.BUY
-    }
-
-    if (RmrkActionRegex.CONSUME.test(rmrkString)) {
-      return RmrkEvent.CONSUME
-    }
-
-    if (RmrkActionRegex.CHANGEISSUER.test(rmrkString)) {
-      return RmrkEvent.CHANGEISSUER
-    }
-
-    if (RmrkActionRegex.LIST.test(rmrkString)) {
-      return RmrkEvent.LIST
-    }
-
-    if (RmrkActionRegex.EMOTE.test(rmrkString)) {
-      return RmrkEvent.EMOTE
-    }
-
-    throw new EvalError(`[NFTUtils] Unable to get action from ${rmrkString}`);
-
+    throw new EvalError(`[NFTUtils] Unable to get action - ${rawAction}`);
   }
 
-  public static unwrap(rmrkString: string): any {
-    const rmrk = isHex(rmrkString) ? hexToString(rmrkString) : rmrkString
+  public static unwrap(rmrk: string): Array<string> {
     try {
       const decoded = decodeURIComponent(rmrk)
-      const rr: RegExp = /{.*}/
-      const match = decoded.match(rr)
+      // const rr: RegExp = /{.*}/
+      // const match = decoded.match(rr)
 
-      if (match) {
-        return JSON.parse(match[0])
-      }
+      // if (match) {
+      //   return JSON.parse(match[0])
+      // }
 
       const split = decoded.split(SQUARE)
+      return split
 
-      if (split.length >= 4) {
-        return ({
-          id: split[3],
-          metadata: split[4]
-        } as RmrkInteraction)
-      }
+      // if (split.length >= 4) {
+      //   return ({
+      //     id: split[3],
+      //     metadata: split[4]
+      //   } as RmrkInteraction)
+      // }
 
       throw new TypeError(`RMRK: Unable to unwrap object ${decoded}`)
     } catch (e) {
       throw e
     }
   }
-
-}
-
-export class RmrkActionRegex {
-  static MINTNFT = /^[rR][mM][rR][kK]::MINTNFT::/;
-  static MINT = /^[rR][mM][rR][kK]::MINT::/;
-  static SEND = /^[rR][mM][rR][kK]::SEND::/;
-  static BUY = /^[rR][mM][rR][kK]::BUY::/;
-  static CONSUME = /^[rR][mM][rR][kK]::CONSUME::/;
-  static CHANGEISSUER = /^[rR][mM][rR][kK]::CHANGEISSUER::/;
-  static LIST = /^[rR][mM][rR][kK]::LIST::/;
-  static EMOTE = /^[rR][mM][rR][kK]::EMOTE::/;
 
 }
 
